@@ -4,7 +4,7 @@
 
 ----
 
-![1586425218310](.\img\1586425218310.png)
+![1586425218310]( [https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/%E5%A5%BD%E7%8E%A9%E7%9A%84demo%E6%97%A5%E8%AE%B0/%E5%8E%9F%E7%94%9FJS%E5%81%9A%E4%B8%80%E4%B8%AA%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E8%A3%81%E5%89%AA%E5%99%A8demo/img/1586425218310.png](https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/好玩的demo日记/原生JS做一个网页图片裁剪器demo/img/1586425218310.png) )
 
 ### 1. 基本功能：
 
@@ -77,7 +77,7 @@
 
     下图展示了以计算拖拽后`div`元素的`left`为例的计算原理：主要是先计算出鼠标离`div`最左边的距离`diffX`,拖拽后的`left`值等于拖拽后的`clientX-diffX`
 
-    ![1586433722267](.\img\1586433722267.png)
+    ![1586433722267]( [https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/%E5%A5%BD%E7%8E%A9%E7%9A%84demo%E6%97%A5%E8%AE%B0/%E5%8E%9F%E7%94%9FJS%E5%81%9A%E4%B8%80%E4%B8%AA%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E8%A3%81%E5%89%AA%E5%99%A8demo/img/1586433722267.png](https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/好玩的demo日记/原生JS做一个网页图片裁剪器demo/img/1586433722267.png) )
 
     
 
@@ -196,7 +196,7 @@
 
   `demo`中主要使用了第三种传参的方式，其中，`dx`和`dy`是`image`在`canvas`中定位的坐标值；`dw`和`dh`是`image`在`canvas`中即将绘制区域（相对`dx`和`dy`坐标的偏移量）的宽度和高度值；`sx`和`sy`是`image`所要绘制的起始位置，`sw`和`sh`是`image`所要绘制区域（相对`image`的`sx`和`sy`坐标的偏移量）的宽度和高度值。 
 
-  ![0_1312439694SFqd](.\img\0_1312439694SFqd.gif)
+  ![0_1312439694SFqd]( [https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/%E5%A5%BD%E7%8E%A9%E7%9A%84demo%E6%97%A5%E8%AE%B0/%E5%8E%9F%E7%94%9FJS%E5%81%9A%E4%B8%80%E4%B8%AA%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E8%A3%81%E5%89%AA%E5%99%A8demo/img/0_1312439694SFqd.gif](https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/好玩的demo日记/原生JS做一个网页图片裁剪器demo/img/0_1312439694SFqd.gif) )
 
   * `canvas.toDataURL`:  把上述用`canvas`截出的图像转换成`png/base64`格式
 
