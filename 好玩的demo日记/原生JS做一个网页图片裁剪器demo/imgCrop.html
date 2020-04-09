@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Imgage Cutter</title>
+  </head>
+  <style>
+    html {
+      background-color: #303030;
+    }
+    body {
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      -khtml-user-select: none;
+      user-select: none;
+    }
+    .container {
+      display: flex;
+    }
+    .img-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .img-wrapper button {
+      width: 1000px;
+      height: 35px;
+      background-color: antiquewhite;
+    }
+    .img-container {
+      height: 400px;
+      width: 1000px;
+      position: relative;
+      margin: 50px 70px;
+      background-color: darkgray;
+      display: inline-block;
+    }
+    .img-container .img-crop {
+      height: 400px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: none;
+      transform: translate(-50%, -50%);
+      filter: brightness(30%);
+    }
+    .img-container .img-crop-copy {
+      height: 400px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: none;
+      transform: translate(-50%, -50%);
+      clip: rect(0px 100px 100px 0px);
+    }
+    .preview-container {
+      position: relative;
+      border-radius: 10px;
+      /* background-color: darkgray; */
+      display: inline-block;
+      vertical-align: top;
+      margin-top: 50px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .preview-container button {
+      width: 95px;
+      border-radius: 2px;
+    }
+    .preview-img-container {
+      height: 100px;
+      width: 100px;
+      position: relative;
+      border-radius: 10px;
+      background-color: darkgray;
+      display: inline-block;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .preview-img-container img {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      display: none;
+    }
+    .cutting-box {
+      position: absolute;
+      border: 2px dashed white;
+      cursor: move;
+      width: 100px;
+      height: 100px;
+      display: none;
+    }
+    .cut-button {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #000;
+    }
+    .left-top-button {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      cursor: nw-resize;
+    }
+    .top-button {
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-45%);
+      cursor: n-resize;
+    }
+    .right-top-button {
+      position: absolute;
+      top: -5px;
+      left: 100%;
+      transform: translateX(-45%);
+      cursor: ne-resize;
+    }
+    .right-button {
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      transform: translate(-45%, -45%);
+      cursor: e-resize;
+    }
+    .right-down-button {
+      position: absolute;
+      top: 100%;
+      left: 100%;
+      transform: translate(-45%, -45%);
+      cursor: se-resize;
+    }
+    .down-button {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-45%, -45%);
+      cursor: s-resize;
+    }
+    .left-down-button {
+      position: absolute;
+      top: 100%;
+      left: -5px;
+      transform: translateY(-45%);
+      cursor: sw-resize;
+    }
+    .left-button {
+      position: absolute;
+      top: 50%;
+      left: -5px;
+      transform: translateY(-45%);
+      cursor: w-resize;
+    }
+  </style>
+  <body>
+    <div class="container">
+      <div class="img-wrapper">
+        <div class="img-container">
+          <img
+            src=""
+            class="img-crop"
+            draggable="false"
+            onselect="return false"
+          />
+          <img
+            src=""
+            class="img-crop-copy"
+            draggable="false"
+            onselect="return false"
+          />
+          <div class="cutting-box">
+            <div class="cut-button left-top-button"></div>
+            <!-- <div class="cut-button top-button"></div> -->
+            <div class="cut-button right-top-button"></div>
+            <!-- <div class="cut-button right-button"></div> -->
+            <div class="cut-button right-down-button"></div>
+            <!-- <div class="cut-button down-button"></div> -->
+            <div class="cut-button left-down-button"></div>
+            <!-- <div class="cut-button left-button"></div> -->
+          </div>
+        </div>
+        <input type="file" onchange="imgUpload(this)" />
+      </div>
+      <div class="preview-container">
+        <div class="preview-img-container">
+          <img src="" class="pre-img" />
+        </div>
+        <button onclick="downloadFileByBase64()">下载图片</button>
+      </div>
+    </div>
+  </body>
+  <script>
+    let cutBox = document.getElementsByClassName("cutting-box")[0];
+    let img = document.getElementsByClassName("img-crop")[0];
+    let img_copy = document.getElementsByClassName("img-crop-copy")[0];
+    let preImg = document.getElementsByClassName("pre-img")[0];
+    let imgTmp;
+    // console.log(img.offsetLeft, img.offsetTop);
+    // console.log(img.offsetWidth, img.height);
+    // console.log(cutBox);
+    let draggingDOM = null;
+    let diffX = 0;
+    let diffY = 0;
+    let draggingResize = null;
+    let pos = {};
+
+    document.addEventListener("mousedown", function (e) {
+      // console.log(draggingDOM);
+      if (e.target.className.indexOf("cutting-box") !== -1) {
+        draggingDOM = e.target;
+        diffX = e.clientX - draggingDOM.offsetLeft;
+        diffY = e.clientY - draggingDOM.offsetTop;
+      } else if (e.target.className.indexOf("cut-button") !== -1) {
+        draggingResize = e.target;
+        pos = {
+          x: e.clientX,
+          y: e.clientY,
+          w: cutBox.clientWidth,
+          h: cutBox.clientHeight,
+          t: cutBox.offsetTop,
+          l: cutBox.offsetLeft,
+        };
+      }
+    });
+    document.addEventListener("mousemove", function (e) {
+      let ori_left = img.offsetLeft - 0.5 * img.width;
+      let ori_top = img.offsetTop - 0.5 * img.height;
+      if (draggingDOM) {
+        let left = e.clientX - diffX;
+        let top = e.clientY - diffY;
+        if (left < ori_left) left = ori_left;
+        if (top < ori_top) top = ori_top;
+        if (left > ori_left + img.width - cutBox.clientWidth)
+          left = ori_left + img.width - cutBox.clientWidth;
+        if (top > ori_top + img.height - cutBox.clientHeight)
+          top = ori_top + img.height - cutBox.clientHeight;
+        draggingDOM.style.left = left + "px";
+        draggingDOM.style.top = top + "px";
+        rect = `rect(${top - ori_top}px ${
+          left - ori_left + cutBox.clientWidth
+        }px ${top - ori_top + cutBox.clientHeight}px ${left - ori_left}px)`;
+        img_copy.style.clip = rect;
+        let base64Img = getBase64AfterCut(
+          imgTmp,
+          left - ori_left,
+          top - ori_top,
+          cutBox.clientWidth,
+          cutBox.clientHeight,
+          img.width,
+          img.height
+        );
+        preImg.src = base64Img;
+        preImg.style.display = "block";
+      } else if (draggingResize) {
+        let w, h, top, left;
+        let diffXR = e.clientX - pos.x;
+        let diffYR = e.clientY - pos.y;
+        if (draggingResize.className.indexOf("left-top-button") !== -1) {
+          w = Math.max(100, pos.w - diffXR);
+          h = Math.max(100, pos.h - diffYR);
+          if (Math.abs(w) > Math.abs(h)) h = w;
+          else w = h;
+          diff = w - pos.w;
+          top = pos.t - diff;
+          left = pos.l - diff;
+          if (top < ori_top) {
+            top = ori_top;
+            left = pos.l - (pos.t - ori_top);
+            w = Math.max(100, pos.w + (pos.t - ori_top));
+            h = Math.max(100, pos.h + (pos.t - ori_top));
+          }
+          if (left < ori_left) {
+            left = ori_left;
+            top = pos.t - (pos.l - ori_left);
+            w = Math.max(100, pos.w + (pos.l - ori_left));
+            h = Math.max(100, pos.h + (pos.l - ori_left));
+          }
+          cutBox.style.top = top + "px";
+          cutBox.style.left = left + "px";
+        } else if (
+          draggingResize.className.indexOf("right-top-button") !== -1
+        ) {
+          w = Math.max(100, pos.w + diffXR);
+          h = Math.max(100, pos.h - diffYR);
+          if (Math.abs(w) > Math.abs(h)) h = w;
+          else w = h;
+          diff = w - pos.w;
+          top = pos.t - diff;
+          left = pos.l;
+          if (top < ori_top) {
+            top = ori_top;
+            w = Math.max(100, pos.w + (pos.t - ori_top));
+            h = Math.max(100, pos.h + (pos.t - ori_top));
+          }
+          if (left + w > img.width + ori_left) {
+            w = img.width + ori_left - left;
+            h = pos.h + (w - pos.w);
+            top = pos.t - (w - pos.w);
+          }
+          cutBox.style.top = top + "px";
+        } else if (
+          draggingResize.className.indexOf("right-down-button") !== -1
+        ) {
+          w = Math.max(100, diffXR + pos.w);
+          h = Math.max(100, diffYR + pos.h);
+          if (Math.abs(w) > Math.abs(h)) h = w;
+          else w = h;
+          if (w >= img.width - (cutBox.offsetLeft - ori_left)) {
+            w = img.width - (cutBox.offsetLeft - ori_left);
+            h = w;
+          }
+          if (h >= img.height - (cutBox.offsetTop - ori_top)) {
+            h = img.height - (cutBox.offsetTop - ori_top);
+            w = h;
+          }
+          left = pos.l;
+          top = pos.t;
+        } else if (
+          draggingResize.className.indexOf("left-down-button") !== -1
+        ) {
+          w = Math.max(100, pos.w - diffXR);
+          h = Math.max(100, pos.h + diffYR);
+          if (Math.abs(w) > Math.abs(h)) h = w;
+          else w = h;
+          diff = w - pos.w;
+          top = pos.t;
+          left = pos.l - diff;
+          if (left < ori_left) {
+            left = ori_left;
+            w = Math.max(100, pos.w + (pos.l - ori_left));
+            h = Math.max(100, pos.h + (pos.l - ori_left));
+          }
+          if (top + h > img.height + ori_top) {
+            h = img.height + ori_top - top;
+            w = pos.w + (h - pos.h);
+            left = pos.l - (h - pos.h);
+          }
+          cutBox.style.left = left + "px";
+        }
+        cutBox.style.width = w + "px";
+        cutBox.style.height = h + "px";
+        rect = `rect(${top - ori_top}px ${
+          left - ori_left + cutBox.clientWidth
+        }px ${top - ori_top + cutBox.clientHeight}px ${left - ori_left}px)`;
+        // console.log(rect);
+        img_copy.style.clip = rect;
+        let base64Img = getBase64AfterCut(
+          imgTmp,
+          left - ori_left,
+          top - ori_top,
+          w,
+          h,
+          img.width,
+          img.height
+        );
+        let preImg = document.getElementsByClassName("pre-img")[0];
+        preImg.src = base64Img;
+        preImg.style.display = "block";
+      }
+    });
+    document.addEventListener("mouseup", function () {
+      draggingDOM = null;
+      draggingResize = null;
+    });
+    function imgUpload(imgFile) {
+      img.style.display = "none";
+      img_copy.style.display = "none";
+      if (!imgFile || !imgFile.files[0]) {
+        return;
+      }
+      let reader = new FileReader();
+      let imgContent = "";
+      reader.onload = function (e) {
+        imgContent = e.target.result;
+        imgTmp = new Image();
+        imgTmp.src = imgContent;
+        let scale = 0;
+        imgTmp.onload = function () {
+          if (this.width / this.height >= 2.5) {
+            scale = 1000 / this.width;
+            img.width = 1000;
+            img.height = this.height * scale;
+          } else {
+            scale = 400 / this.height;
+            img.width = this.width * scale;
+            img.height = 400;
+          }
+          img_copy.width = img.width;
+          img_copy.height = img.height;
+          img.src = imgContent;
+          img_copy.src = imgContent;
+          img_copy.style.clip = "rect(0 100px 100px 0)";
+          img.style.display = "block";
+          img_copy.style.display = "block";
+          cutBox.style.top = img.offsetTop - 0.5 * img.height + "px";
+          cutBox.style.left = img.offsetLeft - 0.5 * img.width + "px";
+          cutBox.style.width = "100px";
+          cutBox.style.height = "100px";
+          cutBox.style.display = "block";
+          let base64Img = getBase64AfterCut(
+            imgTmp,
+            0,
+            0,
+            100,
+            100,
+            img.width,
+            img.height
+          );
+          let preImg = document.getElementsByClassName("pre-img")[0];
+          preImg.src = base64Img;
+          preImg.style.display = "block";
+        };
+      };
+      reader.readAsDataURL(imgFile.files[0]);
+    }
+
+    function getBase64AfterCut(
+      image,
+      dx,
+      dy,
+      widthCut,
+      heightCut,
+      width,
+      height
+    ) {
+      let canvas = document.createElement("canvas");
+      canvas.height = heightCut;
+      canvas.width = widthCut;
+      let ctx = canvas.getContext("2d");
+      //计算原始图片的实际裁剪偏移
+      dx = (image.width / width) * dx;
+      dy = (image.height / height) * dy;
+      let realWidthCut = (image.width / width) * widthCut;
+      let realHeightCut = (image.height / height) * widthCut;
+
+      ctx.drawImage(
+        image,
+        dx,
+        dy,
+        realWidthCut,
+        realHeightCut,
+        0,
+        0,
+        widthCut,
+        widthCut
+      );
+      return canvas.toDataURL("image/png");
+    }
+
+    function dataURLtoBlob(dataurl) {
+      var arr = dataurl.split(","),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new Blob([u8arr], { type: mime });
+    }
+    function downloadFile(url, name = "cropperImg") {
+      var a = document.createElement("a");
+      a.setAttribute("href", url);
+      a.setAttribute("download", name);
+      a.setAttribute("target", "_blank");
+      let clickEvent = document.createEvent("MouseEvents");
+      clickEvent.initEvent("click", true, true);
+      a.dispatchEvent(clickEvent);
+    }
+    function downloadFileByBase64() {
+      // console.log("download");
+      if (preImg.style.display) {
+        console.log(preImg.style.display);
+        var myBlob = dataURLtoBlob(preImg.src);
+        var myUrl = URL.createObjectURL(myBlob);
+        downloadFile(myUrl, `img-${new Date().getTime().toString(36)}`);
+      } else {
+        alert("请先上传图片");
+      }
+    }
+  </script>
+</html>
