@@ -183,14 +183,26 @@
 
   * 关于`mousemove`等事件的主要逻辑，则不再累赘，只需注意`resize`时的一些边界条件即可
 
------------
-
-以下待续。。。。。。
-
 * #### 对视口区域的部分图片进行截图
 
   * `canvas.drawImage`的使用：
-  * `canvas.toDataURL`:
+
+    ```javascript
+    //平时调用支持三种传参
+    void ctx.drawImage(image, dx, dy);
+    void ctx.drawImage(image, dx, dy, dWidth, dHeight);
+    void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+    ```
+
+  `demo`中主要使用了第三种传参的方式，其中，`dx`和`dy`是`image`在`canvas`中定位的坐标值；`dw`和`dh`是`image`在`canvas`中即将绘制区域（相对`dx`和`dy`坐标的偏移量）的宽度和高度值；`sx`和`sy`是`image`所要绘制的起始位置，`sw`和`sh`是`image`所要绘制区域（相对`image`的`sx`和`sy`坐标的偏移量）的宽度和高度值。 
+
+  ![0_1312439694SFqd](.\img\0_1312439694SFqd.gif)
+
+  * `canvas.toDataURL`:  把上述用`canvas`截出的图像转换成`png/base64`格式
+
+    ```javascript
+    canvas.toDataURL("image/png");
+    ```
 
 * #### 图片下载到本地
 
