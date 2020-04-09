@@ -4,7 +4,7 @@
 
 ----
 
-![1586425218310](C:\Users\XHDMW\AppData\Roaming\Typora\typora-user-images\1586425218310.png)
+![1586425218310](.\img\1586425218310.png)
 
 ### 1. 基本功能：
 
@@ -77,7 +77,7 @@
 
     下图展示了以计算拖拽后`div`元素的`left`为例的计算原理：主要是先计算出鼠标离`div`最左边的距离`diffX`,拖拽后的`left`值等于拖拽后的`clientX-diffX`
 
-    ![1586433722267](C:\Users\XHDMW\AppData\Roaming\Typora\typora-user-images\1586433722267.png)
+    ![1586433722267](.\img\1586433722267.png)
 
     
 
