@@ -210,13 +210,13 @@
 
   ```javascript
   /**
-  	image: 		缩放前的原图片, 上传图片后使用 Image() 存放原图片的信息
-  	dx:			截图视口相对于图片左边界的距离 left
-  	dy:			截图视口相对于图片上边界的距离 top
-  	widthCut:    截图视口的宽度
-      heightCut:	 截图视口的高度
-      width:		 缩放后的图片宽度
-      height:		 缩放后的图片高度
+  image: 缩放前的原图片, 上传图片后使用 Image() 存放原图片的信息
+  dx:	截图视口相对于图片左边界的距离 left
+  dy:	截图视口相对于图片上边界的距离 top
+  widthCut:  截图视口的宽度
+  heightCut: 截图视口的高度
+  width:	缩放后的图片宽度
+  height:	缩放后的图片高度
   **/
   function getBase64AfterCut(image, dx, dy, widthCut, heightCut, width, height) {
         let canvas = document.createElement("canvas");
@@ -278,7 +278,7 @@
   ```javascript
   function dataURLtoBlob(base64) {
         var arr = base64.split(","),
-          mime = arr[0].match(/:(.*?);/)[1],		//提取出文件类型
+          mime = arr[0].match(/:(.*?);/)[1],
           bstr = atob(arr[1]),
           n = bstr.length,
           u8arr = new Uint8Array(n);
@@ -296,16 +296,7 @@
   ```
 
   ```javascript
-  	function downloadFileByBase64() {
-        if (preImg.style.display) {
-          var myBlob = dataURLtoBlob(preImg.src);
-          var myUrl = URL.createObjectURL(myBlob);
-          downloadFile(myUrl, `img-${new Date().getTime().toString(36)}`);
-        } else {
-          alert("请先上传图片");
-        }
-      }    
-  	function downloadFile(url, name = "cropperImg") {
+      function downloadFile(url, name = "cropperImg") {
         var a = document.createElement("a");
         a.setAttribute("href", url);
         a.setAttribute("download", name);
@@ -313,6 +304,15 @@
         let clickEvent = document.createEvent("MouseEvents");
         clickEvent.initEvent("click", true, true);
         a.dispatchEvent(clickEvent);
+      }
+      function downloadFileByBase64() {
+        if (preImg.style.display) {
+          var myBlob = dataURLtoBlob(preImg.src);
+          var myUrl = URL.createObjectURL(myBlob);
+          downloadFile(myUrl, `img-${new Date().getTime().toString(36)}`);
+        } else {
+          alert("请先上传图片");
+        }
       }
   ```
 
