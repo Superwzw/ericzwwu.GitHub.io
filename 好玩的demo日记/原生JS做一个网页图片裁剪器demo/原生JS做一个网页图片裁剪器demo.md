@@ -198,13 +198,193 @@
 
   ![0_1312439694SFqd]( https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/%E5%A5%BD%E7%8E%A9%E7%9A%84demo%E6%97%A5%E8%AE%B0/%E5%8E%9F%E7%94%9FJS%E5%81%9A%E4%B8%80%E4%B8%AA%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E8%A3%81%E5%89%AA%E5%99%A8demo/img/0_1312439694SFqd.gif?raw=true)
 
+  
+
   * `canvas.toDataURL`:  把上述用`canvas`截出的图像转换成`png/base64`格式
 
     ```javascript
     canvas.toDataURL("image/png");
     ```
+    
+  * 因此，在整个demo中根据此原理可以获取到视口区域选中的截图：
+
+  ```javascript
+  /**
+  	image: 		缩放前的原图片, 上传图片后使用 Image() 存放原图片的信息
+  	dx:			截图视口相对于图片左边界的距离 left
+  	dy:			截图视口相对于图片上边界的距离 top
+  	widthCut:    截图视口的宽度
+      heightCut:	 截图视口的高度
+      width:		 缩放后的图片宽度
+      height:		 缩放后的图片高度
+  **/
+  function getBase64AfterCut(image, dx, dy, widthCut, heightCut, width, height) {
+        let canvas = document.createElement("canvas");
+        canvas.height = heightCut;		//设置canvas的宽高为截图视口宽高
+        canvas.width = widthCut;
+        let ctx = canvas.getContext("2d");
+        //计算原始图片的实际裁剪偏移
+        dx = (image.width / width) * dx;	// 进行等比缩放把编辑区上的dx转换为在原图片上的dx
+        dy = (image.height / height) * dy;// 进行等比缩放把编辑区上的dy转换为在原图片上的dy
+        let realWidthCut = (image.width / width) * widthCut;//进行等比缩放把视口宽度转换为在原图片上的实际裁剪宽度
+        let realHeightCut = (image.height / height) * widthCut;//进行等比缩放把视口宽度转换为在原图片上的实际裁剪高度
+  
+        ctx.drawImage(
+          image,
+          dx,
+          dy,
+          realWidthCut,
+          realHeightCut,
+          0,
+          0,
+          widthCut,
+          widthCut
+        );
+        return canvas.toDataURL("image/png");		//最终返回截图的base64数据
+      }
+  ```
+
+  
 
 * #### 图片下载到本地
 
-* #### 视口内"亮灯"，视口外"关灯的效果实现"
+  为了更好地说明代码，以下我们先介绍几个用到的知识点：
+
+  * 图片的`base64`存储格式: 
+
+    ```
+    data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAgAElEQVR4Xt29d3SdZ54e9nz1NvRKAEQjQLCLpMQmqpEURQ2ptvLOaDyzsRPvnmSL4/U5SRzHzvE/yTlZr2Nv1j5JXHazfcaePmPNjKQZSTMqVKFEiV2sINhAgujtlq/mPL/3++69AAECpLSJ ......
+    ```
+
+    以上是我截图的一小段`base64`格式图片的具体内容(省略号处还有许多字符手动省略了)，但由此我们可以看到`base64`格式的图片大致可分为两部分，两部分之间以逗号分隔
+
+    * 第一部分：`data:image/png;base64`
+    * 第二部分：一段字母，数字，符号等不同字符组成的数据
+
+  * `JS`中的`Blob`对象（引用自 https://www.jianshu.com/p/b322c2d5d778 ）
+
+    ```
+    在一般的Web开发中，很少会用到Blob，但Blob可以满足一些场景下的特殊需求。Blob，Binary Large Object的缩写，代表二进制类型的大对象。Blob的概念在一些数据库中有使用到，例如，MYSQL中的BLOB类型就表示二进制数据的容器。在Web中，Blob类型的对象表示不可变的类似文件对象的原始数据，通俗点说，就是Blob对象是二进制数据，但它是类似文件对象的二进制数据，因此可以像操作File对象一样操作Blob对象，实际上，File继承自Blob。
+    ```
+
+    * 可以通过Blob的构造函数创建Blob对象： `Blob(blobParts[, options])`, 参数说明：
+      * `blobParts`： 数组类型， 数组中的每一项连接起来构成Blob对象的数据，数组中的每项元素可以是`ArrayBuffer(二进制数据缓冲区), ArrayBufferView,Blob,DOMString`。或其他类似对象的混合体。
+      * `options`： 可选项，字典格式类型，可以指定如下两个属性：
+        * `type:` 默认值为`""`，它代表了将会被放入到blob中的数组内容的MIME类型。
+        * `endings:`， 默认值为`"transparent"`，用于指定包含行结束符`\n`的字符串如何被写入。 它是以下两个值中的一个： "native"，表示行结束符会被更改为适合宿主操作系统文件系统的换行符；"transparent"，表示会保持blob中保存的结束符不变。
+
+  * 根据以上两个知识点，我们可以利用`Blob`对象把`base64`格式的图片转换为文件对象的二级制数据：
+
+  ```javascript
+  function dataURLtoBlob(base64) {
+        var arr = base64.split(","),
+          mime = arr[0].match(/:(.*?);/)[1],		//提取出文件类型
+          bstr = atob(arr[1]),
+          n = bstr.length,
+          u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+      }
+  ```
+
+  * 至于下载文件到本地，`demo`中用了`a`标签的`download`属性：
+
+  ```html
+   <button onclick="downloadFileByBase64()">下载图片</button>
+  ```
+
+  ```javascript
+  	function downloadFileByBase64() {
+        if (preImg.style.display) {
+          var myBlob = dataURLtoBlob(preImg.src);
+          var myUrl = URL.createObjectURL(myBlob);
+          downloadFile(myUrl, `img-${new Date().getTime().toString(36)}`);
+        } else {
+          alert("请先上传图片");
+        }
+      }    
+  	function downloadFile(url, name = "cropperImg") {
+        var a = document.createElement("a");
+        a.setAttribute("href", url);
+        a.setAttribute("download", name);
+        a.setAttribute("target", "_blank");
+        let clickEvent = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", true, true);
+        a.dispatchEvent(clickEvent);
+      }
+  ```
+
+* #### 视口内"亮灯"，视口外"关灯"的效果实现
+
+  * `CSS clip:` 可以用于裁剪一个图像：
+
+    ```css
+    img{
+    	clip: rect(0px 100px 100px 0px);
+    }
+    ```
+
+    `rect`规定形状为矩形，官方表明的 一般的用法为`rect (top, right, bottom, left) `， 而我的理解则是 `top`表示裁剪区域距离图片上方的距离，`right`表示需要裁剪的宽度加上`left`，`bottom`表示需要裁剪的高度加上`top`， `left`则表示裁剪区域距离图片左方的距离。具体可如图所示：
+
+    ![470800-20160911165041811-2070965771](C:\Users\XHDMW\Desktop\KASUMI的前端日记\好玩的demo日记\原生JS做一个网页图片裁剪器demo\img\470800-20160911165041811-2070965771.jpg)
+
+    
+
+    利用此`css`属性可以做到仅显示图片的`react`区域：
+
+    ![20200410125420](C:\Users\XHDMW\Desktop\KASUMI的前端日记\好玩的demo日记\原生JS做一个网页图片裁剪器demo\img\20200410125420.png)
+
+    那如何做到关灯呢？答案是在添加把图片分为两层，底层为没有设置`clip`属性的图片，通过`css filter`来设置其亮度为`20%`或其他值，上层的图片则是设置了`clip`属性，只显示指定区域。两张图片的位置重叠，由于上层的图片`z-index`的值会更大，默认覆盖底层经过亮度调整之后的图片，通过这种覆盖的效果，就能够做到我们需要的效果了。
+
+    ```html
+    <div class="img-container">
+              <img
+                src=""
+                class="img-crop"
+                draggable="false"
+                onselect="return false"
+              />
+              <img
+                src=""
+                class="img-crop-copy"
+                draggable="false"
+                onselect="return false"
+              />
+    </div>
+    ```
+
+    
+
+    ```css
+    .img-container .img-crop {
+          height: 400px;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: none;
+          transform: translate(-50%, -50%);
+          filter: brightness(30%);
+        }
+        .img-container .img-crop-copy {
+          height: 400px;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: none;
+          transform: translate(-50%, -50%);
+          clip: rect(0px 100px 100px 0px);
+        }
+    ```
+
+----
+
+### 写在最后
+
+这篇笔记主要把整个demo中需要解决的痛点一个个分离出来作为记录，不涉及具体的编码部分。实际上，我发现自己在编码时并没有作过多的设计，导致代码非常混乱，可能难以理解，也可能存在一些结构或者性能上的问题。后续笔者会寻找几个写得好的开源demo，分别分析他们的代码优点，并对自己的代码加以修改。
+
+我认为的学习的过程即是这样，一开始你想写一个demo，可能会遇到许多的问题，难点。在拆解，分开，理解其中涉及到的知识后，我们便能够实现大概的功能。自己去探索的过程是非常珍贵的。
+
+等到自己写出来了demo，下一步则是要参考别人相同功能的demo中，有哪些写得比自己更为出色的地方。这个过程也许很漫长，但的确是非常有趣。且这一步对自己的成长而言，是意义重大的。在这篇笔记中，也许也有很多作者理解错了，写得不好的地方，希望能一起讨论与分享观点，一起成长。
 

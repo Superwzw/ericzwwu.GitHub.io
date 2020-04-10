@@ -418,7 +418,6 @@
       };
       reader.readAsDataURL(imgFile.files[0]);
     }
-
     function getBase64AfterCut(
       image,
       dx,
@@ -453,6 +452,7 @@
     }
 
     function dataURLtoBlob(dataurl) {
+      console.log(dataurl);
       var arr = dataurl.split(","),
         mime = arr[0].match(/:(.*?);/)[1],
         bstr = atob(arr[1]),
@@ -475,7 +475,7 @@
     function downloadFileByBase64() {
       // console.log("download");
       if (preImg.style.display) {
-        console.log(preImg.style.display);
+        // console.log(preImg.style.display);
         var myBlob = dataURLtoBlob(preImg.src);
         var myUrl = URL.createObjectURL(myBlob);
         downloadFile(myUrl, `img-${new Date().getTime().toString(36)}`);
