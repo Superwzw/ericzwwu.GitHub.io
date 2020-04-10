@@ -328,13 +328,13 @@
 
     `rect`规定形状为矩形，官方表明的 一般的用法为`rect (top, right, bottom, left) `， 而我的理解则是 `top`表示裁剪区域距离图片上方的距离，`right`表示需要裁剪的宽度加上`left`，`bottom`表示需要裁剪的高度加上`top`， `left`则表示裁剪区域距离图片左方的距离。具体可如图所示：
 
-    ![470800-20160911165041811-2070965771](C:\Users\XHDMW\Desktop\KASUMI的前端日记\好玩的demo日记\原生JS做一个网页图片裁剪器demo\img\470800-20160911165041811-2070965771.jpg)
+    ![](https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/%E5%A5%BD%E7%8E%A9%E7%9A%84demo%E6%97%A5%E8%AE%B0/%E5%8E%9F%E7%94%9FJS%E5%81%9A%E4%B8%80%E4%B8%AA%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E8%A3%81%E5%89%AA%E5%99%A8demo/img/470800-20160911165041811-2070965771.jpg?raw=true)
 
     
 
     利用此`css`属性可以做到仅显示图片的`react`区域：
 
-    ![20200410125420](C:\Users\XHDMW\Desktop\KASUMI的前端日记\好玩的demo日记\原生JS做一个网页图片裁剪器demo\img\20200410125420.png)
+    ![](https://github.com/Superwzw/ericzwwu.GitHub.io/blob/master/%E5%A5%BD%E7%8E%A9%E7%9A%84demo%E6%97%A5%E8%AE%B0/%E5%8E%9F%E7%94%9FJS%E5%81%9A%E4%B8%80%E4%B8%AA%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E8%A3%81%E5%89%AA%E5%99%A8demo/img/20200410125420.png?raw=true)
 
     那如何做到关灯呢？答案是在添加把图片分为两层，底层为没有设置`clip`属性的图片，通过`css filter`来设置其亮度为`20%`或其他值，上层的图片则是设置了`clip`属性，只显示指定区域。两张图片的位置重叠，由于上层的图片`z-index`的值会更大，默认覆盖底层经过亮度调整之后的图片，通过这种覆盖的效果，就能够做到我们需要的效果了。
 
