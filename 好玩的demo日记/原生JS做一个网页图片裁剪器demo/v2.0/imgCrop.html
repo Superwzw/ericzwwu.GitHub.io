@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Imgage Cutter</title>
+  </head>
+  <link rel="stylesheet" type="text/css" href="./imgCrop.css"></linkrel>
+  <body>
+    <div class="container">
+      <div class="img-wrapper">
+        <div class="img-container">
+          <img
+            src=""
+            class="img-crop"
+            draggable="false"
+            onselect="return false"
+          />
+          <img
+            src=""
+            class="img-crop-copy"
+            draggable="false"
+            onselect="return false"
+          />
+          <div class="cutting-box">
+            <div class="cut-button left-top-button"></div>
+            <!-- <div class="cut-button top-button"></div> -->
+            <div class="cut-button right-top-button"></div>
+            <!-- <div class="cut-button right-button"></div> -->
+            <div class="cut-button right-down-button"></div>
+            <!-- <div class="cut-button down-button"></div> -->
+            <div class="cut-button left-down-button"></div>
+            <!-- <div class="cut-button left-button"></div> -->
+          </div>
+        </div>
+        <input type="file" onchange="imgUpload(this)" />
+      </div>
+      <div class="preview-container">
+        <div class="preview-img-container">
+          <img src="" class="pre-img" />
+        </div>
+        <button onclick="downloadFileByBase64()">下载图片</button>
+      </div>
+    </div>
+  </body>
+  <script src="./dispatchEvent.js"></script>
+</html>

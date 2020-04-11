@@ -1,0 +1,150 @@
+html {
+  background-color: #303030;
+}
+body {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -khtml-user-select: none;
+  user-select: none;
+}
+.container {
+  display: flex;
+}
+.img-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.img-wrapper button {
+  width: 1000px;
+  height: 35px;
+  background-color: antiquewhite;
+}
+.img-container {
+  height: 400px;
+  width: 1000px;
+  position: relative;
+  margin: 50px 70px;
+  background-color: darkgray;
+  display: inline-block;
+}
+.img-container .img-crop {
+  height: 400px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: none;
+  transform: translate(-50%, -50%);
+  filter: brightness(30%);
+}
+.img-container .img-crop-copy {
+  height: 400px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: none;
+  transform: translate(-50%, -50%);
+  clip: rect(0px 100px 100px 0px);
+}
+.preview-container {
+  position: relative;
+  border-radius: 10px;
+  /* background-color: darkgray; */
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 50px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.preview-container button {
+  width: 95px;
+  border-radius: 2px;
+}
+.preview-img-container {
+  height: 100px;
+  width: 100px;
+  position: relative;
+  border-radius: 10px;
+  background-color: darkgray;
+  display: inline-block;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.preview-img-container img {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  display: none;
+}
+.cutting-box {
+  position: absolute;
+  border: 2px dashed white;
+  cursor: move;
+  width: 100px;
+  height: 100px;
+  display: none;
+}
+.cut-button {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #000;
+}
+.left-top-button {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+.top-button {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-45%);
+  cursor: n-resize;
+}
+.right-top-button {
+  position: absolute;
+  top: -5px;
+  left: 100%;
+  transform: translateX(-45%);
+  cursor: ne-resize;
+}
+.right-button {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translate(-45%, -45%);
+  cursor: e-resize;
+}
+.right-down-button {
+  position: absolute;
+  top: 100%;
+  left: 100%;
+  transform: translate(-45%, -45%);
+  cursor: se-resize;
+}
+.down-button {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-45%, -45%);
+  cursor: s-resize;
+}
+.left-down-button {
+  position: absolute;
+  top: 100%;
+  left: -5px;
+  transform: translateY(-45%);
+  cursor: sw-resize;
+}
+.left-button {
+  position: absolute;
+  top: 50%;
+  left: -5px;
+  transform: translateY(-45%);
+  cursor: w-resize;
+}
