@@ -87,9 +87,13 @@
 
   其实说起来事件机制，我第一个会想到`React`自己实现的一套事件机制，想要了解的可以参考 [【React深入】React事件机制](https://segmentfault.com/a/1190000018391074)
 
-  基于`React`这套自己实现的事件机制，所有的事件绑定在了`document`之上，同一的回调为`dispatchEvent`。而每个回调函数则被存储在了`listenerBack`中，存储的结构大致为` listenerBank[registrationName][key] `这样的形式，那我是不是也可以这样呢，于是我对代码新建了一个`dispatchEvent.js`文件，并在里面编写了了如下代码：
+  基于`React`这套自己实现的事件机制，所有的事件绑定在了`document`之上，同一的回调为`dispatchEvent`。而每个回调函数则被存储在了`listenerBack`中，存储的结构大致为` listenerBank[registrationName][key] `这样的形式，那我是不是也可以这样呢，于是我尝试编写了了如下代码：
 
   ```javascript
+  document.addEventListener("mousedown", dispatchEvent);
+  document.addEventListener("mousemove", dispatchEvent);
+  document.addEventListener("mouseup", dispatchEvent);
+  
   function dispatchEvent(e) {
     let listenerBank = {
       mousedown: {
@@ -103,9 +107,107 @@
         "right-down-button": function () {},
         "left-down-button": function () {},
       },
-      mouseup: function () {},
+    mouseup: function () {},
     };
+      
+     function getCallBack(e) {
+      let type = e.type;
+      let node = draggingDOM ? draggingDOM.className : e.target.className;
+      return listenerBank[type][buttonType](e);
+    }
+    getCallBack(e);
   }
   ```
+  
+  这样一来，我们就可以通过访问`listenerBank['mousedown']['cutting-box']`等这样的方法在代码中引入我们预先写好逻辑的回调函数了。当需要新增监听器或者需要修改旧的逻辑时，我们可以非常方便在`dispatchEvent`中进行操作。
+  
+  
+  
+* `mousedown`, `mousemove`, `mouseup`是否存在的耦合/冗余的代码,  以`mousemove`中的拖拽截图视口部分代码为例：
 
-  这样一来，我们就可以通过访问`listenerBank['mousedown']['cutting-box']`等这样的方法在代码中引入我们预先写好逻辑的回调函数了。
+```javascript
+mousemove: {
+      "cutting-box": function (e) {
+        if (draggingDOM) {
+          // 1. 计算拖拽后的距离, 计算拖拽后的截图视口是否超出图片范围(边界处理)
+          boxLeft = e.clientX - diffX;
+          boxTop = e.clientY - diffY;
+          if (boxLeft < ori_left) boxLeft = ori_left;
+          if (boxTop < ori_top) boxTop = ori_top;
+          if (boxLeft > ori_left + img.width - cutBox.clientWidth) {
+            boxLeft = ori_left + img.width - cutBox.clientWidth;
+          }
+          if (boxTop > ori_top + img.height - cutBox.clientHeight) {
+            boxTop = ori_top + img.height - cutBox.clientHeight;
+          }
+          // 2. 根据计算好的距离, 使用js改变真实DOM中截图视口的大小以及位置
+          draggingDOM.style.left = boxLeft + "px";
+          draggingDOM.style.top = boxTop + "px";
+          rect = `rect(${boxTop - ori_top}px ${
+            boxLeft - ori_left + cutBox.clientWidth
+          }px ${boxTop - ori_top + cutBox.clientHeight}px ${
+            boxLeft - ori_left
+          }px)`;
+          img_copy.style.clip = rect;
+          // 3. 根据截图视口的位置, 大小, 利用canvas进行截图，并填充到预览的img中
+          let base64Img = getBase64AfterCut(
+            imgTmp,
+            boxLeft - ori_left,
+            boxTop - ori_top,
+            cutBox.clientWidth,
+            cutBox.clientHeight,
+            img.width,
+            img.height
+          );
+          preImg.src = base64Img;
+          preImg.style.display = "block";
+        }
+      },
+```
+
+基本而言，对于每一个事件监听函数中的代码，做的都是以下三件事情：
+
+1. 计算截图视口"拖拽/缩放"后的距离, 以及视口是否超出图片范围(边界处理)
+2. 根据计算好的距离, 使用`js`改变真实`DOM`中截图视口的大小以及位置
+3. 根据截图视口的位置, 大小, 利用`canvas`进行截图，并填充到预览的`img`中
+
+对于第一部分，也即是截图视口的距离计算，与边界条件的处理。在这一部分中，计算的逻辑会根据实际情况而改变。因此，每一个事件监听函数中的这一部分代码是独特的，无法抽离出来。
+
+而对于第二部分和第三部分的代码，其实不同事件监听函数中，他们的操作大致是相同的，并且改变的部分总是和`left`, `top`, `height`, `width`这四个属性有关。那我们可不可以把后两部分的代码抽象分离出来，形成一个独立的块呢？
+
+考虑在`React, Vue`等`MVVM`视图层框架中 ，我们是如何做到的：我们或许会把截图视口`cutting-box`封装成一个独立的组件，这个组件有自己的`state`， 其中最关键的四个状态便是`left`, `top`, `height`, `width`， 或许我们会写成这样：
+
+```jsx
+class CutBox extends React.PureComponent{
+    constructor(props){
+        super(props)
+    }
+    render(){
+        const {left, top, width, height} = this.props
+        return(
+        	<div class="cutting-box" style={
+                    {
+                        left:left, top:top, width:width, height:height
+                    }
+                }>
+                <div class="cut-button left-top-button"></div>
+                <div class="cut-button right-top-button"></div>
+                <div class="cut-button right-down-button"></div>
+                <div class="cut-button left-down-button"></div>
+          	</div>
+        )
+    }
+}
+```
+
+这样当我们的父组件重新传入一个新的`props`时，截图视口`cutBox`就会重新渲染，改变其位置。这就是`MVVM`框架的一个优点，利用它们实现好的`VM`层，我们只需关注数据本身，改变数据，视图也会相应自行地进行改变。这样可以把视图层和数据层进行解耦。
+
+反观我们的原生`js demo`中，我们在处理完处理之后，需要手动地去改变视图，也就是上述的第二部分与第三部分的代码所要做的事情。因此，我们的代码耦合程度会变高，原因在于在每一个事件监听函数中，数据层代码都和视图层代码紧紧耦合在一起。
+
+#### 解决方案：
+
+既然在分析代码中的耦合/冗余部分时，想到了`MVVM`框架中的更好实现。那我们是否也可以借用`VM`层的思想来对代码进行解耦呢？
+
+-----
+
+## 待续......
